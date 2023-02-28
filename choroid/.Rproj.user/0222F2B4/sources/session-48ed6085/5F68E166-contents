@@ -1,0 +1,91 @@
+
+# WGCNA -------------------------------------------------------------------
+
+
+cellmarkers = res.down$feature
+
+library(hdWGCNA)
+# using the cowplot theme for ggplot
+theme_set(theme_cowplot())
+
+# set random seed for reproducibility
+set.seed(12345)
+
+# optionally enable multithreading
+enableWGCNAThreads(nThreads = 16)
+
+
+# Set up seurat obj for WGCNA
+
+seurat_obj <- SetupForWGCNA(
+  Choriod,
+  features = cellmarkers,
+  wgcna_name = "Choriod" #
+)
+
+# construct metacells  in each group
+MetacellsByGroups(
+  seurat_obj,
+  group.by = c("cell_types","phenotype"),
+  ident.group = "cell_types",
+  k = 30,
+  reduction = "umap",
+  assay = "RNA",
+  cells.use = NULL,
+  slot = "data",
+  mode = "average",
+  min_cells = 100,
+  max_shared = 15,
+  target_metacells = 1000,
+  max_iter = 5000,
+  verbose = FALSE,
+  wgcna_name = "Choriod"
+)-> seurat_objs
+
+
+
+
+# normalize metacell expression matrix:
+seurat_objs <- NormalizeMetacells(seurat_objs)
+
+
+# Visualize the metacell created  ------------------------------------------
+
+# standard seurat work flow 
+
+seurat_objs <- seurat_objs %>% 
+  NormalizeMetacells()
+seurat_objs <- ScaleMetacells(seurat_objs, features=VariableFeatures(seurat_objs))
+seurat_objs <- RunPCAMetacells(seurat_objs, features=VariableFeatures(seurat_objs))
+seurat_objs <- RunHarmonyMetacells(seurat_objs, group.by.vars='phenotype')
+seurat_objs <- RunUMAPMetacells(seurat_objs, reduction='harmony', dims=1:15)
+
+
+p1 <-
+  DimPlotMetacells(seurat_objs, group.by = 'cell_types') + umap_theme() +
+  ggtitle("cell_types")
+p2 <-
+  DimPlotMetacells(seurat_objs, group.by = 'phenotype') + umap_theme() +
+  ggtitle("phenotype")
+
+p1 | p2
+
+
+
+# Co-expression Network analysis ------------------------------------------
+
+# set up expression matrix
+seurat_objs <- SetDatExpr(
+  seurat_objs,
+  group_name = 'Cone bipolar cells', # the name of the group of interest in the group.by column
+  group.by= 'cell_types', # the metadata column containing the cell type info. This same column should have also been used in MetacellsByGroups
+  assay = 'RNA', # using RNA assay
+  slot = 'data' # using normalized data
+)
+
+seurat_objs@assays$RNA@meta.features
+
+seurat_objs <- TestSoftPowers(
+  seurat_objs,
+  networkType = 'signed' # you can also use "unsigned" or "signed hybrid"
+)

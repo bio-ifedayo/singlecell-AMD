@@ -1,0 +1,26 @@
+{
+    "id": "D2F1860B",
+    "path": "~/choroid/choroid/01_Fetchdata.R",
+    "project_path": "01_Fetchdata.R",
+    "type": "r_source",
+    "hash": "1246232823",
+    "contents": "",
+    "dirty": false,
+    "created": 1677592525437.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "113,0",
+        "scrollLine": "99"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1677598279,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1677598279985,
+    "read_only": false,
+    "read_only_alternatives": []
+}
